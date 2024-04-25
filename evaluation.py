@@ -4,7 +4,11 @@ import numpy as np
 
 def get_action_egreedy(values ,epsilon):
 	# Implement epsilon greedy action policy
-	NotImplementedError
+	actions = values.shape[0]
+	if np.random.rand() < epsilon:
+		return np.random.randint(actions)
+	else:
+		return np.argmax(values)
 
 def evaluation(env, Q_table, step_bound = 100, num_itr = 10):
 	"""
