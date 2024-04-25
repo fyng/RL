@@ -6,44 +6,61 @@ env = Maze()
 init_state = env.reset()
 state = init_state
 
-# initialize reward
-Q_val = np.zeros((env.snum, env.anum))
-
 discount = 0.9
 
-max_iter = 1000
+# turn off slip and calculate expectation instead
+slip = env.slip
+env.slip = 0
 
-opt_state = env.cell2idx[env.goal_pos]*8 + 7
-print(opt_state)
+value = np.zeros(env.snum)
+goal = env.cell2idx[env.goal_pos]*8 + 7
 
-for i in range(max_iter):
-    Q_val_init = Q_val.copy()
+# value iteration
+delta = 1
+while delta > 1e-8:
+    delta = 0
     for state in range(env.snum):
-        if state == opt_state:
-            # don't update the value of the optimal state
-            # can remove this if presetting optimal state to 3 and taking the max
-            Q_val[state] = 0
-            continue
+        v_prev = value[state]
+
+        v_new = 0
         for action in range(env.anum):
+            # don't slip
             reward, next_state, done = env.step(state, action)
-            if done:
-                # if done, update Q value to the reward
-                Q_val[state, action] = max(discount * reward, Q_val[state, action])
-            else:
-                # if not, discount the value of the next state
-                next_val = np.max(Q_val[next_state])
-                Q_val[state, action] = max(discount * next_val, Q_val[state, action])
+            val = discount * value[next_state] + reward
 
-    # if np.allclose(Q_val, Q_val_init):
-    #     print('Converged at iteration', i+1)
-    #     break
+            # slip
+            reward_slip, next_state_slip, done_slip = env.step(state, ACTMAP[action])
+            val_slip = discount * value[next_state_slip] + reward_slip
 
+            v_a = (1 - slip) * val + slip * val_slip
+            v_new = max(v_new, v_a)
+        
+        value[state] = v_new
+        delta = max(delta, abs(v_prev - value[state]))
+
+# output optimal policy
+policy = np.zeros(env.snum)
+Q_val = np.zeros((env.snum, env.anum))
+for state in range(env.snum):
+    v = np.zeros(env.anum)
+    for action in range(env.anum):
+        reward, next_state, done = env.step(state, action)
+        reward_slip, next_state_slip, done_slip = env.step(state, ACTMAP[action])
+
+        val = discount * value[next_state] + reward
+        val_slip = discount * value[next_state_slip] + reward_slip
+
+        v[action] = (1 - slip) * val + slip * val_slip
+        Q_val[state, action] = (1 - slip) * val + slip * val_slip
+
+    policy[state] = np.argmax(v)
+
+policy = np.argmax(Q_val, axis = 1)
+
+
+np.save('value.npy', value)
 np.save('Qval.npy', Q_val)
+np.save('policy.npy', policy)
 
-V = np.max(Q_val, axis=1)
-print(V.shape)
-print(V[0])
-
-np.save('value.npy', V)
 
 
