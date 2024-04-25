@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 from maze import *
 
 # TODO: intialize
-
+lr = 0.1 # update to Q table
+epsilon = 0.1 # chance of taking a random action
 
 eval_step, eval_reward = [] , []
 learning = True

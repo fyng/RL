@@ -9,7 +9,7 @@ state = init_state
 discount = 0.9
 
 # turn off slip and calculate expectation instead
-slip = env.slip
+slip = 0.1
 env.slip = 0
 
 value = np.zeros(env.snum)

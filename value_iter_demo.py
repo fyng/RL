@@ -13,8 +13,8 @@ policy = np.load('policy.npy')
 
 done = False
 while not done:
-    # action = np.argmax(Q_val[state])
-    action = policy[state]
+    action = np.argmax(Q_val[state])
+    # action = policy[state]
     reward, state, done = env.step(state, action)
     print('value: ', Q_val[state], np.argmax(Q_val[state]))
     env.plot(state, action)
