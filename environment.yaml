@@ -6,4 +6,5 @@ dependencies:
 - numpy
 - python=3.11
 - tqdm
-
+- pip:
+ - gymnasium
