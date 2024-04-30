@@ -22,31 +22,29 @@ def rescale_states(state, low, high):
 # env = gym.make('Acrobot-v1')
 # lr = 0.01
 # discount = 0.99
-
+# seed = 2
 
 # Mountain Car
 # https://gymnasium.farama.org/environments/classic_control/mountain_car/
 # state: [position velocity]
-env = gym.make('MountainCar-v0')
-env._max_episode_steps = 1000
-lr = 0.01
+env = gym.make('MountainCar-v0', max_episode_steps=650)
+# env._max_episode_steps = 1000
+lr = 0.1
 discount = 0.99
+seed = 1
 ########################################################################
+wrapped_env = gym.wrappers.RecordEpisodeStatistics(env)
+
 name = env.unwrapped.spec.id
 print(name)
-
 obs_space_dims = env.observation_space.shape[0]
 action_space_dims = env.action_space.n
 low = env.observation_space.low
 high = env.observation_space.high
-wrapped_env = gym.wrappers.RecordEpisodeStatistics(env)
 
 policy = LinearPolicy(obs_space_dims, action_space_dims)
 
-print(action_space_dims)
-
 # for seed in [1,2,3,5,8]:
-seed = 2
 random.seed(seed)
 np.random.seed(seed)
 agent = REINFORCE(env, policy, discount=discount, lr = lr)
@@ -55,10 +53,8 @@ episode_rewards = []
 episode_lengths = []
 
 max_episode_num = 5000
-
-
 for episode in range(max_episode_num):
-    state, info = wrapped_env.reset()
+    state, info = wrapped_env.reset(seed=seed)
     done = False
 
     actions = []

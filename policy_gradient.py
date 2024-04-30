@@ -24,8 +24,7 @@ class REINFORCE:
         '''
         Return an discrete action using pi(a|s) 
         '''
-        a_t = self.policy(state).sample().numpy()
-
+        a_t = self.policy(state).sample().item()
         return a_t
 
 
