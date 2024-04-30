@@ -1,0 +1,9 @@
+name: RL
+channels:
+- conda-forge
+dependencies:
+- matplotlib
+- numpy
+- python=3.11
+- tqdm
+
