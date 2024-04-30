@@ -2,9 +2,11 @@ name: RL
 channels:
 - conda-forge
 dependencies:
+- pip
 - matplotlib
 - numpy
 - python=3.11
 - tqdm
+
 - pip:
- - gymnasium
+  - gymnasium
