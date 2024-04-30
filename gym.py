@@ -4,7 +4,7 @@
 import gymnasium as gym
 from matplotlib import pyplot as plt
 from policy_gradient import REINFORCE
-from policy import LinearPolicy
+from policy import LinearPolicy, NNPolicy
 
 import numpy as np
 import random
@@ -14,6 +14,7 @@ def rescale_states(state, low, high):
     return 2 * (state - low) / (high - low) - 1
 
 ########################################################################
+# Environment setup
 # Uncomment as needed
 
 # # Acrobat
@@ -23,15 +24,18 @@ def rescale_states(state, low, high):
 # lr = 0.01
 # discount = 0.99
 # seed = 2
+# max_episode_num = 5000
+
 
 # Mountain Car
 # https://gymnasium.farama.org/environments/classic_control/mountain_car/
 # state: [position velocity]
-env = gym.make('MountainCar-v0', max_episode_steps=650)
+env = gym.make('MountainCar-v0', max_episode_steps=1000)
 # env._max_episode_steps = 1000
-lr = 0.1
-discount = 0.99
+lr = 0.05
+discount = 0.90
 seed = 1
+max_episode_num = 2000
 ########################################################################
 wrapped_env = gym.wrappers.RecordEpisodeStatistics(env)
 
@@ -42,9 +46,9 @@ action_space_dims = env.action_space.n
 low = env.observation_space.low
 high = env.observation_space.high
 
-policy = LinearPolicy(obs_space_dims, action_space_dims)
+# policy = LinearPolicy(obs_space_dims, action_space_dims) # for Acrobat-V1
+policy = NNPolicy(obs_space_dims, action_space_dims) # for MountainCar-V0
 
-# for seed in [1,2,3,5,8]:
 random.seed(seed)
 np.random.seed(seed)
 agent = REINFORCE(env, policy, discount=discount, lr = lr)
@@ -52,7 +56,7 @@ agent = REINFORCE(env, policy, discount=discount, lr = lr)
 episode_rewards = []
 episode_lengths = []
 
-max_episode_num = 5000
+max_episode_num = 2000
 for episode in range(max_episode_num):
     state, info = wrapped_env.reset(seed=seed)
     done = False
