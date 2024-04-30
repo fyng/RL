@@ -39,7 +39,7 @@ while delta > 1e-8:
         delta = max(delta, abs(v_prev - value[state]))
 
 # output optimal policy
-policy = np.zeros(env.snum)
+# policy = np.zeros(env.snum)
 Q_val = np.zeros((env.snum, env.anum))
 for state in range(env.snum):
     v = np.zeros(env.anum)
@@ -53,14 +53,13 @@ for state in range(env.snum):
         v[action] = (1 - slip) * val + slip * val_slip
         Q_val[state, action] = (1 - slip) * val + slip * val_slip
 
-    policy[state] = np.argmax(v)
+    # policy[state] = np.argmax(v)
 
 policy = np.argmax(Q_val, axis = 1)
 
-
 np.save('value.npy', value)
 np.save('Qval.npy', Q_val)
-np.save('policy.npy', policy)
+# np.save('policy.npy', policy)
 
 
 

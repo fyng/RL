@@ -9,7 +9,7 @@ state = init_state
 env.slip = 0
 
 Q_val = np.load('Qval.npy')
-policy = np.load('policy.npy')
+# policy = np.load('policy.npy')
 
 done = False
 while not done:
