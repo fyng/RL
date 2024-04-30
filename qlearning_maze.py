@@ -22,8 +22,6 @@ Q_table = np.zeros((env.snum, env.anum))
 Q_optim = np.load('Qval.npy')
 
 for i in tqdm(range(max_iter)):  
-    # TODO: implement Q learning
-
     for state in range(env.snum):
         for action in range(env.anum):
             reward, next_state, done = env.step(state, action)
