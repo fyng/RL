@@ -9,6 +9,9 @@ from policy import LinearPolicy, NNPolicy
 import numpy as np
 import random
 import torch
+# import imageio
+# from PIL import Image
+# import PIL.ImageDraw as ImageDraw
 
 def rescale_states(state, low, high):
     return 2 * (state - low) / (high - low) - 1
@@ -31,9 +34,10 @@ def rescale_states(state, low, high):
 # https://gymnasium.farama.org/environments/classic_control/mountain_car/
 # state: [position velocity]
 env = gym.make('MountainCar-v0', max_episode_steps=1000)
-# env._max_episode_steps = 1000
-lr = 0.05
-discount = 0.90
+# 0.1: getting small gains but loses it on next iter
+# 0,2: many more small gains, don't stick
+lr = 0.0035
+discount = 0.99
 seed = 1
 max_episode_num = 2000
 ########################################################################
@@ -46,8 +50,8 @@ action_space_dims = env.action_space.n
 low = env.observation_space.low
 high = env.observation_space.high
 
-# policy = LinearPolicy(obs_space_dims, action_space_dims) # for Acrobat-V1
-policy = NNPolicy(obs_space_dims, action_space_dims) # for MountainCar-V0
+policy = LinearPolicy(obs_space_dims, action_space_dims) # for Acrobat-V1
+# policy = NNPolicy(obs_space_dims, action_space_dims) # for MountainCar-V0
 
 random.seed(seed)
 np.random.seed(seed)
@@ -63,17 +67,39 @@ for episode in range(max_episode_num):
 
     actions = []
     states = []
+    t = 0
     while not done:
-        action = agent.sample_action(rescale_states(state, low, high))
+        if name == 'MountainCar-v0': 
+            # take same action for 5 timesteps for mountain car
+            if t == 0:
+                action = np.random.choice([0,2])
+            if t % 5 == 0:
+                # do not rescale position, only velocity
+                state[1] = rescale_states(state[1], low[1], high[1])
+                action = agent.sample_action(rescale_states(state, low, high))
+
+            # state[1] = rescale_states(state[1], low[1], high[1])
+            # action = agent.sample_action(rescale_states(state, low, high))
+        else:
+            action = agent.sample_action(rescale_states(state, low, high))
+
+        # action = agent.sample_action(rescale_states(state, low, high))
+
+        # print(episode, t, action)
         obs, reward, terminated, truncated, info = wrapped_env.step(action)
+
+        # if name == 'MountainCar-v0':
+        #     # give a small reward for climbing out of the sink
+        #     reward += np.abs(obs[0]) * 0.5 
+
         agent.rewards.append(reward) # store the reward
 
         done = terminated or truncated
         actions.append(action)
         states.append(state)
-
         state = obs
-    
+        t += 1
+        
     agent.update(states, actions)
 
     # calculate the discounted future rewards
@@ -94,3 +120,20 @@ axes[1].plot(range(0, max_episode_num), episode_rewards)
 axes[1].set_title('Average reward in an episode')
 plt.tight_layout()
 plt.savefig(f'plots/REINFORCE_{name}.png')
+
+
+# # render
+# env_render = gym.make(name, render_mode='rgb_array')
+# done = False
+# frames = []
+# state, info = env_render.reset(seed=seed)
+# while not done:
+#     action = agent.sample_action(rescale_states(state, low, high))
+#     frame = env.render(mode='rgb_array')
+#     im = Image.fromarray(frame)
+#     drawer = ImageDraw.Draw(im)
+#     state, reward, done, _ = env_render.step(action)
+
+#     frames.append(frame)
+
+# imageio.mimwrite(f'videos/{name}_agent.gif', frames, fps=60)

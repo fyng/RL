@@ -25,7 +25,7 @@ class NNPolicy(nn.Module):
     def __init__(self, obs_space_dims, action_space_dims):
         super().__init__()
         # NN policy
-        hidden_space1 = 8
+        hidden_space1 = 6
         self.model = nn.Sequential(
             nn.Linear(obs_space_dims, hidden_space1),
             nn.ReLU(),
