@@ -2,7 +2,6 @@
 In this project, I implemented reinforcement learning methods including value iteration, Q-learning and policy gradient on a variety of environments. Reproducible code is available as a [git repository](https://github.com/fyng/SLAM)
 
 # Maze
-## Problem Statement
 Given an maze, determine the optimal policy (next move given current location in the maze) to 1) maximize the number of flags captured while 2) reaching the end as quickly as possible
 
 The maze is a 4x5 grid, where a square can be empty contains obstables, or flags. There is a designated starting and goal square. The agent can take a step at every timepoint (UP, DOWN, LEFT, RIGHT). There is a 0.1 probability that the agent slips and take the next counterclockwise action (e.g. if slipped while going UP, go RIGHT instead). When the agent encounters an obstacle, it bounces back to its current square. 
@@ -17,7 +16,7 @@ Once the optimal value function $V^{*}(s)$ is found, the optimal Q-function $Q^{
 
 ## Results
 Taking a discount factor of $\gamma = 0.9$, the optimal policy will produce the following trajectory:
-START -> DOWN -> RIGHT -> RIGHT -> UP -> DOWN -> RIGHT -> DOWN -> DOWN -> UP -> UP -> RIGHT -> UP
+START -> DOWN -> RIGHT -> RIGHT -> UP -> DOWN -> RIGHT -> DOWN -> DOWN -> UP -> UP -> RIGHT -> UP -> GOAL
 
 The Q-function that produced this set of trajectory is in `Qval.npy`.
 
@@ -27,41 +26,34 @@ The Q-function that produced this set of trajectory is in `Qval.npy`.
 
 
 ## Approach 2: Q-learning
-Instead of iteratively updating the value function $V(s)$, Q-learning updates the Q-function $Q(s,a)$. 
+Instead of iteratively updating the value function $V(s)$, Q-learning updates the Q-function $Q(s,a)$. Here I implement $\epsilon$-greedy Q-learning: instead of performing the best action according to the Q-function, the agent has some small probability $\epsilon$ of takes a random step instead. Intuitively, the agent "exploits" the best action $1-\epsilon$ of the time and "explores" $\epsilon$ of the time. 
+
+While value iteration updates the value function $V(s)$ purely based on the next state, Q-learning performs a *weighted* update of $Q(s,a)$, parameterized by a learning rate $\alpha$. 
+$$ Q(s_t, a_t) = (1- \alpha)Q(s_t, a_t) + \alpha[r_{t+1} + \gamma \max_aQ(s_{t+1},a)]$$
 
 ## Results: 
-The model maintains a $55m \times 55m$ occupancy grid map at $5cm$ resolution. The value of a grid is its log-probability of being occupied by an obstacle. At each time point, the mounted LIDAR scans the environment and the light ray passes through unoccupied empty space until it hits the first obstacle along its path and bounces back. Each LIDAR beam is mapped to (1) a single occupied grid coordinates, and (2) a series of empty grid coordinates via `getMapCellsFromRay_fclad()`. 
+In general, a small $\epsilon$ and learning rate leads to effective convergence. The Q-function learned via Q-learning is close to the optimal $Q^{*}$, and the agent reliably reaches the goal with 2 flags in 12 steps.
 
-For each time point, a contact updates the log-probability of a grid coordinate by +1, while a passthrough updates the log-probability of a grid coordinate by -0.1. Therefore, a LIDAR beam will need to pass through a coordinate for 10 subsequent timepoints to clear a obstacle registration. The absolute log-probability of each grid is capped at 15, which prevents the map from becoming too confident.
+### $\epsilon$ greedy parameter
+| lr=0.1, eps=0.05 | lr=0.1, eps=0.1 | lr=0.1, eps=0.25 | lr=0.1, eps=0.5 |
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+![](plots/Q_lr0.1_ep0.05.png)  |  ![](plots/Q_lr0.1_ep0.1.png) | ![](plots/Q_lr0.1_ep0.25.png)  |  ![](plots/Q_lr0.1_ep0.5.png)
 
->**NOTE ON LIDAR DATA**:
- Each LIDAR beam consists of $n$ (angle, distance) tuples undergoes preprocessing before being used in mapping. First, LIDAR beams with distance < 0.1 meters are discarded as this might be reflecting off the robot itself. The maximum spec-ed range of the LIDAR is 30 meters, so any beams with distance > 30 meters is also removed. Lastly, the (angle, distance) tuples are translated from the robot frame to the world frame. 
+A small value of $\epsilon$ is desirable for speeding up convergence, and exploration of alternative trajectories (indicated by some agents reaching the goal with 3 flags instead of the optimal 2 flags). When $\epsilon$ is set too large, Q-learning has difficulty reaching convergence and there is a large oscillation in average reward, and number of steps taken to reach the goal.
 
+### Learning rate parameter
+| lr=0.1, eps=0.05 | lr=0.2, eps=0.05 | lr=0.4, eps=0.05 | lr=0.6, eps=0.05 |
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+![](plots/Q_lr0.1_ep0.05.png)  |  ![](plots/Q_lr0.2_ep0.05.png) | ![](plots/Q_lr0.4_ep0.05.png)  |  ![](plots/Q_lr0.6_ep0.05.png)
 
-## 3. SLAM
-The intuition of SLAM is that adding noise to the position and orientation of particles can correct for rolling with slipping or non-optimal parameter choice for the robot. In my implementation, 200 particles are seeded. Noise is added to the particles every $n$ iterations. Noise is only added to $\theta$, which will effectively add noise to $x, y$ as the particles independently evolve. In particular, I chose to scale the noise as a function of the current $d\theta$. This helps correct for unoptimal robot width - if the robot is not turning, there is no $\theta$ error, but the $\theta$ error increases when the turn is sharp. The scaling factor is parameterized by `theta_scale`
+Similarly, when the learning rate is too large, Q-learning has difficulty converging. In general, when learning rate increases, there is a larger variance in the number of steps taken to reach the goal. When lr = 0.6, large updates to the Q-function can cause it to fall into a worse solution and reach the goal with only 1 flag.
 
-Each particle has a weight, which is updated at each time step by the correspondance between the particle's map and the current best map. The correspondence is measured by the log-probability of the pixel that is detected as occupied. 
-$$corr = \sigma(\sum_{i \in{\text{lidar obstacles}}} \text{occupancy grid}_i)$$
-The better the correspondance, the higher the sum. The value is passed through a sigmoid to ensure non-negativity, and multiplied to the weight of the previous timepoint before re-normalizing. 
-$$w_{t+1} = w_t \times corr$$
+# Gym 
 
-The 'exploration' of the particles are determined by the reseeding interval. The intuition is that the LIDAR of the robot only covers the forward cone, so sufficient time needs to occur between reseeding to allow the robot to turn such that it will encounter previous obstacles in its field of view. However, if the reseeding interval is too long, the robot will completely deviate off course and loss its dead_reckoning. I experimented with constant reseeding intervals and found it best to dynamically set the reseeding interval by checking the number of effective particles. Resampling when $n_effective < 0.8$ works well.
-$$\text{n\_{effective}} = \frac{\sum w^2}{(\sum w)^2}$$
+## Q-learning
 
-During reseeding, the particles with higher overall correspondence have a higher probability of being selected. The probability is determined by the weight of the particle. The particles are sampled *with replacement* using the weights until 200 particles are reselected. After reseeding, all particle weights will be reset to be uniform
-
-# Results
-For the naive algorithm (odometry only), I used 730 mm as the width, which produced the most reasonable path traces. The SLAM algorithm further refined the alignment of wall features and reduced the "smearing effect" of wheels slipping during turns.
-
-The naive algorithms maps poorly at width = 500 mm, but using the SLAM algorithm recovers the geometry of the mapping, although the overall rotation of the map with respect to the grid suffers.
-
-### Maze: optimal path via value iteration
+## REINFORCE
 
 
-### Maze: Q-learning 
 
 
-# Appendix:
-## Value Iteration over Maze
-value:  [4.88757666 5.35070957 5.29191057 5.94523286] 3

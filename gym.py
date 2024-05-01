@@ -36,22 +36,21 @@ def rescale_states(state, low, high):
 env = gym.make('MountainCar-v0', max_episode_steps=1000)
 # 0.1: getting small gains but loses it on next iter
 # 0,2: many more small gains, don't stick
-lr = 0.0035
+lr = 1e-4
 discount = 0.99
-seed = 1
+seed = 3
 max_episode_num = 2000
 ########################################################################
 wrapped_env = gym.wrappers.RecordEpisodeStatistics(env)
 
 name = env.unwrapped.spec.id
-print(name)
+print(name, lr)
 obs_space_dims = env.observation_space.shape[0]
 action_space_dims = env.action_space.n
 low = env.observation_space.low
 high = env.observation_space.high
 
 policy = LinearPolicy(obs_space_dims, action_space_dims) # for Acrobat-V1
-# policy = NNPolicy(obs_space_dims, action_space_dims) # for MountainCar-V0
 
 random.seed(seed)
 np.random.seed(seed)
@@ -69,21 +68,12 @@ for episode in range(max_episode_num):
     states = []
     t = 0
     while not done:
+        state = rescale_states(state, low, high)
         if name == 'MountainCar-v0': 
-            # take same action for 5 timesteps for mountain car
-            if t == 0:
-                action = np.random.choice([0,2])
             if t % 5 == 0:
-                # do not rescale position, only velocity
-                state[1] = rescale_states(state[1], low[1], high[1])
-                action = agent.sample_action(rescale_states(state, low, high))
-
-            # state[1] = rescale_states(state[1], low[1], high[1])
-            # action = agent.sample_action(rescale_states(state, low, high))
+                action = agent.sample_action(state)
         else:
-            action = agent.sample_action(rescale_states(state, low, high))
-
-        # action = agent.sample_action(rescale_states(state, low, high))
+            action = agent.sample_action(state)
 
         # print(episode, t, action)
         obs, reward, terminated, truncated, info = wrapped_env.step(action)
