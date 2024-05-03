@@ -1,10 +1,9 @@
-from Maze.plots.evaluation import *
-
-from agent import QLearning
 import matplotlib.pyplot as plt
-from Maze.plots.maze import *
 from tqdm import tqdm
 import gymnasium as gym
+import numpy as np
+from agent import QLearning
+
 
 def rmse(predictions, targets):
     return np.sqrt(np.mean((predictions-targets)**2))
@@ -50,23 +49,30 @@ def evaluation(env, q_learner, step_bound = 400, num_itr = 10):
 
 	return total_step/float(num_itr), total_reward/float(num_itr)
 
+
+########################################################################
+# Environment setup
+# Uncomment as needed
+
+env = gym.make('Acrobot-v1')
 grids_per_dim = 2 # 10 points per state dimension
-lr = 0.1
+lr = 0.5
 epsilon = 0.05
 n_episodes = 5000
 discount = 0.99
+
+
+
+########################################################################
 
 eval_step = []
 eval_reward = []
 eval_error = []
 
-# https://gymnasium.farama.org/environments/classic_control/acrobot/
-env = gym.make('Acrobot-v1')
 name = env.unwrapped.spec.id
 env.action_space.seed(123) # set seed for reproducibility
 
 q_learner = QLearning(env, lr=lr, discount=discount, epsilon=epsilon, grids_per_dim=grids_per_dim)
-
 
 for i in tqdm(range(n_episodes)):  
 	state, _ = env.reset()
@@ -84,7 +90,10 @@ for i in tqdm(range(n_episodes)):
 
 	# evaluate the agent using the Q-table every 50 steps
 	if (i+1) % 50 == 0:
-		avg_step, avg_reward = evaluation(env, q_learner)
+		if name == 'MountainCar-v0':
+			avg_step, avg_reward = evaluation(env, q_learner, step_bound=1000)
+		else:
+			avg_step, avg_reward = evaluation(env, q_learner)
 		print(f'Episode {i+1}, Average steps to goal: {avg_step}, Average reward: {avg_reward}')
 		eval_step.append(avg_step)
 		eval_reward.append(avg_reward)
