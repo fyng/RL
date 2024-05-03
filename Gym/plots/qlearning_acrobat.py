@@ -1,8 +1,8 @@
-from evaluation import *
+from Maze.plots.evaluation import *
 
 from agent import QLearning
 import matplotlib.pyplot as plt
-from maze import *
+from Maze.plots.maze import *
 from tqdm import tqdm
 import gymnasium as gym
 
@@ -50,8 +50,8 @@ def evaluation(env, q_learner, step_bound = 400, num_itr = 10):
 
 	return total_step/float(num_itr), total_reward/float(num_itr)
 
-grids_per_dim = 4 # 10 points per state dimension
-lr = 0.02
+grids_per_dim = 2 # 10 points per state dimension
+lr = 0.1
 epsilon = 0.05
 n_episodes = 5000
 discount = 0.99
@@ -85,7 +85,7 @@ for i in tqdm(range(n_episodes)):
 	# evaluate the agent using the Q-table every 50 steps
 	if (i+1) % 50 == 0:
 		avg_step, avg_reward = evaluation(env, q_learner)
-		# print(f'Episode {i+1}, Average steps to goal: {avg_step}, Average reward: {avg_reward}')
+		print(f'Episode {i+1}, Average steps to goal: {avg_step}, Average reward: {avg_reward}')
 		eval_step.append(avg_step)
 		eval_reward.append(avg_reward)
 

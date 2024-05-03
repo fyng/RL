@@ -14,7 +14,7 @@ class QLearning:
         self.dim_act = env.action_space.n
         self.low = env.observation_space.low
         self.high = env.observation_space.high
-        self.Q = np.zeros((self.grids_per_dim ** self.dim_obs, env.action_space.n))
+        self.Q = np.random.rand(self.grids_per_dim ** self.dim_obs, env.action_space.n)
 
     def get_action(self, state):
         state_idx = self.state2idx(state)

@@ -1,5 +1,5 @@
 import numpy as np
-from maze import *
+from Maze.plots.maze import *
 
 env = Maze()
 init_state = env.reset()

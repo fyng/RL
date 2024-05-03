@@ -1,6 +1,6 @@
-from evaluation import *
+from Maze.plots.evaluation import *
 import matplotlib.pyplot as plt
-from maze import *
+from Maze.plots.maze import *
 from tqdm import tqdm
 
 def rmse(predictions, targets):
