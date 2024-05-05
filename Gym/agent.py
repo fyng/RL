@@ -35,7 +35,7 @@ class QLearning:
 
     def state2idx(self, state):
         state = 2 * (state - self.low) / (self.high - self.low) - 1 # rescale
-        state_digit = np.digitize(state, np.linspace(-1, 1, self.grids_per_dim)) - 1 # digitize
+        state_digit = np.digitize(state, np.linspace(-1.1, 1.1, self.grids_per_dim+1)) - 1 # digitize
         shape = tuple([self.grids_per_dim] * self.dim_obs)
         idx = np.ravel_multi_index(state_digit, shape)
         return idx
