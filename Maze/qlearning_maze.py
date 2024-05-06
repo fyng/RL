@@ -2,6 +2,7 @@ from evaluation import *
 import matplotlib.pyplot as plt
 from maze import *
 from tqdm import tqdm
+import numpy as np
 
 def rmse(predictions, targets):
     return np.sqrt(np.mean((predictions-targets)**2))

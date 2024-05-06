@@ -3,7 +3,7 @@
 
 import gymnasium as gym
 from matplotlib import pyplot as plt
-from policy_gradient import REINFORCE
+from agent import REINFORCE
 from policy import LinearPolicy, NNPolicy
 
 import numpy as np
