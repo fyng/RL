@@ -39,6 +39,7 @@ class QLearning:
         shape = tuple([self.grids_per_dim] * self.dim_obs)
         idx = np.ravel_multi_index(state_digit, shape)
         return idx
+    
 
 
 class REINFORCE:
