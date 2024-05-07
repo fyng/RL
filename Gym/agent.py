@@ -40,6 +40,12 @@ class QLearning:
         idx = np.ravel_multi_index(state_digit, shape)
         return idx
     
+    def update_lr(self, lr):
+        self.lr = lr    
+
+    def update_epsilon(self, epsilon):
+        self.epsilon = epsilon
+    
 
 
 class REINFORCE:
