@@ -63,7 +63,7 @@ step_bound = 400
 init_lr = 0.1
 init_epsilon = 0.05
 lr_decay = 0.95
-epsilon_decay = 0.95
+epsilon_decay = 1
 decay_step = 100
 n_episodes = 2000
 discount = 0.99
@@ -130,7 +130,6 @@ avg_step, avg_reward = evaluation(env, q_learner, step_bound=step_bound)
 eval_step.append(avg_step)
 eval_reward.append(avg_reward)
 print(f'Episode {i}, Average steps to goal: {avg_step}, Average reward: {avg_reward}')
-
 
 
 f1, axes = plt.subplots(1, 2, figsize=(10, 5))
