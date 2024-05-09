@@ -60,6 +60,8 @@ We explore two toy environments using the [Farama Gymnasium](https://gymnasium.f
 ## Q-learning
 The same Q-learning update rule is implemented like the Maze. Unlike the maze, we do not iterate over all the possible states in each forward pass. Using the Gym API, we instead iterate through each episode to termination, and perform stochastic update over the state space that is encountered while applying the learned $\epsilon$-greedy policy. 
 
+To promote better 
+
 ## REINFORCE
 
 
