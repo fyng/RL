@@ -55,33 +55,33 @@ def evaluation(env, q_learner, step_bound = 400, num_itr = 10):
 # Environment setup
 # Uncomment as needed
 
-# Acrobat-V1
-env = gym.make('Acrobot-v1')
-grids_per_dim = 2 # 10 points per state dimension
-step_bound = 400
-
-init_lr = 0.1
-init_epsilon = 0.05
-lr_decay = 0.95
-epsilon_decay = 1
-decay_step = 100
-n_episodes = 2000
-discount = 0.99
-seed = 3
-
-# # MountainCar-V0
-# env = gym.make('MountainCar-v0', max_episode_steps=1000)
+# # Acrobat-V1
+# env = gym.make('Acrobot-v1')
 # grids_per_dim = 2 # 10 points per state dimension
-# step_bound = 1000
+# step_bound = 400
 
 # init_lr = 0.1
 # init_epsilon = 0.05
-# lr_decay = 0.9
-# epsilon_decay = 0.9
+# lr_decay = 0.8
+# epsilon_decay = 0.8
 # decay_step = 100
 # n_episodes = 2000
 # discount = 0.99
 # seed = 3
+
+# MountainCar-V0
+env = gym.make('MountainCar-v0', max_episode_steps=1000)
+grids_per_dim = 2 # 10 points per state dimension
+step_bound = 1000
+
+init_lr = 0.1
+init_epsilon = 0.05
+lr_decay = 0.8
+epsilon_decay = 0.8
+decay_step = 100
+n_episodes = 2000
+discount = 0.99
+seed = 3
 ########################################################################
 
 eval_step = []
@@ -119,9 +119,11 @@ for i in tqdm(range(n_episodes)):
 		print(f'Episode {i}, Average steps to goal: {avg_step}, Average reward: {avg_reward}. LR: {q_learner.lr:.4f}, Epsilon: {q_learner.epsilon:.4f}')
 
 		# new_lr = max(q_learner.lr * epsilon_decay, 1e-4)
-		# new_eps = max(q_learner.epsilon * lr_decay, 1e-4)
 		new_lr = q_learner.lr * lr_decay
-		new_eps = q_learner.epsilon * epsilon_decay
+
+		new_eps = max(q_learner.epsilon * lr_decay, 1e-3)
+		# new_eps = q_learner.epsilon * epsilon_decay
+
 		q_learner.update_lr(new_lr)
 		q_learner.update_epsilon(new_eps)
 
