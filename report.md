@@ -37,21 +37,28 @@ In general, a small $\epsilon$ and learning rate leads to effective convergence.
 ### $\epsilon$ greedy parameter
 | lr=0.1, eps=0.05 | lr=0.1, eps=0.1 | lr=0.1, eps=0.25 | lr=0.1, eps=0.5 |
 :-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
-![](plots/Q_lr0.1_ep0.05.png)  |  ![](plots/Q_lr0.1_ep0.1.png) | ![](plots/Q_lr0.1_ep0.25.png)  |  ![](plots/Q_lr0.1_ep0.5.png)
+![](Maze/plots/Q_lr0.1_ep0.05.png)  |  ![](Maze/plots/Q_lr0.1_ep0.1.png) | ![](Maze/plots/Q_lr0.1_ep0.25.png)  |  ![](Maze/plots/Q_lr0.1_ep0.5.png)
 
 A small value of $\epsilon$ is desirable for speeding up convergence, and exploration of alternative trajectories (indicated by some agents reaching the goal with 3 flags instead of the optimal 2 flags). When $\epsilon$ is set too large, Q-learning has difficulty reaching convergence and there is a large oscillation in average reward, and number of steps taken to reach the goal.
 
 ### Learning rate parameter
 | lr=0.1, eps=0.05 | lr=0.2, eps=0.05 | lr=0.4, eps=0.05 | lr=0.6, eps=0.05 |
 :-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
-![](plots/Q_lr0.1_ep0.05.png)  |  ![](plots/Q_lr0.2_ep0.05.png) | ![](plots/Q_lr0.4_ep0.05.png)  |  ![](plots/Q_lr0.6_ep0.05.png)
+![](Maze/plots/Q_lr0.1_ep0.05.png)  |  ![](Maze/plots/Q_lr0.2_ep0.05.png) | ![](Maze/plots/Q_lr0.4_ep0.05.png)  |  ![](Maze/plots/Q_lr0.6_ep0.05.png)
 
 Similarly, when the learning rate is too large, Q-learning has difficulty converging. In general, when learning rate increases, there is a larger variance in the number of steps taken to reach the goal. When lr = 0.6, large updates to the Q-function can cause it to fall into a worse solution and reach the goal with only 1 flag.
 
 # Gym 
+We explore two toy environments using the [Farama Gymnasium](https://gymnasium.farama.org/README/) (previously OpenAI Gym) API. The environment used are `Acrobot-v1` and `MountainCar-v0`. 
 
+### `Acrobot-V1`
+[This environment](https://gymnasium.farama.org/environments/classic_control/acrobot/#acrobot) contains a double jointed arm, suspected from verticle position. The reinformement learning problem is to train a policy that applies torque at the middle joint at each time point, such that the arm swings above a certain height. This presents an underactuated robots environment.
+
+### `MountainCar-v0`
+[This environment](https://gymnasium.farama.org/environments/classic_control/mountain_car/) contains a car on a sinosidal hill, and the goal is to learn a policy that accelerates the car leftwards or rightwards at each timestep, such that the car reaches the goal position (a hill on the right).
 
 ## Q-learning
+The same Q-learning update rule is implemented like the Maze. Unlike the maze, we do not iterate over all the possible states in each forward pass. Using the Gym API, we instead iterate through each episode to termination, and perform stochastic update over the state space that is encountered while applying the learned $\epsilon$-greedy policy. 
 
 ## REINFORCE
 
