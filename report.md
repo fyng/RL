@@ -66,8 +66,10 @@ During experimentation, I found that a learning rate decay and $\epsilon$ decay 
 
 `Acrobot-V1` | `MountainCar-v0`
 :-------------------------:|:-------------------------:
-![](Gym/plots/Q_Acrobot-v1_0.8_0.8_100.png)  |  ![](Maze/plots/Q_lr0.1_ep0.1.png) 
- some text | other text
+![](Gym/plots/Q_Acrobot-v1_0.85_0.85_100.png)  |  ![](Gym/plots/Q_MountainCar-v0_0.85_0.85_100.png) 
+initial lr = 0.1, lr decay = 0.85, lr decay interval = 100 | initial lr = 5e-8, lr decay = 0.85, lr decay interval = 100
+initial $\epsilon$ = 0.05, $\epsilon$ decay = 0.85,  $\epsilon$ decay interval = 100| initial $\epsilon$ = 0.05, $\epsilon$ decay = 0.85,  $\epsilon$ decay interval = 100
+$\gamma$ = 0.99 | $\gamma$ = 0.99
 
 
 
@@ -84,10 +86,11 @@ $$\text{Discounted future reward:} \quad G_{s_t} = \sum_{k=t+1}^T \gamma^{k-t-1}
 We can add an arbitrary baseline function $b(s_t)$ to the discounted future reward $G$ as long as it is not a function of the action taken, since it does not change the expectation of the sample gradient. Here, I used a baseline of the running average of the previous 10 rewards. This helps to reduce the variance between gradient updates from each time point. The gradient update, including the baseline, is parameterized by a learning rate $\alpha$ and the discount factor $\gamma$:
 $$\theta_{t+1} = \theta_t + \alpha \gamma^t (G-b_{s_t}) \nabla \ln \pi_\theta(s_t, a_t)$$
 
-In practice, I also rescale the value of each state dimension to (-1,1), in order to ensure learning along all dimensions of the state space.
+In practice, I also rescale the value of each state dimension to (-1,1), in order to ensure learning along all dimensions of the state space. Since reward is sparse for `MountainCar-v0`, every action sampled is performed for 5 consequtive steps to improve the odds of reaching the top of the mountain (rather than left and right accelerations caneling each other out).
 
-The optimal learning curves for each environment is below:
+The optimal learning curves for each environment is below. However, it was difficult to get `MountainCar-v0` to converge to a good policy:
+
 `Acrobot-V1` | `MountainCar-v0`
 :-------------------------:|:-------------------------:
 ![](Gym/plots/REINFORCE_Acrobot-v1.png)  |  ![](Gym/plots/REINFORCE_MountainCar-v0.png) 
-$\alpha = 0.01, \gamma = 0.99$ | 
+$\alpha$ = 0.01, $\gamma$ = 0.99$ | $\alpha$ = 3e-8, $\gamma$ = 0.95
