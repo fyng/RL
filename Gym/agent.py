@@ -87,7 +87,7 @@ class REINFORCE:
             gs.insert(0, running_g)
 
         # baseline = running average of rewards
-        baseline = np.convolve(self.rewards, np.ones(10)/10)[:-9]
+        baseline = np.convolve(self.rewards, np.ones(20)/20)[:-19]
         deltas = torch.tensor(gs - baseline)
         log_probs = self.policy(states).log_prob(actions)
 

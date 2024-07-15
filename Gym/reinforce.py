@@ -20,26 +20,32 @@ def rescale_states(state, low, high):
 # Environment setup
 # Uncomment as needed
 
-# Acrobat
-# https://gymnasium.farama.org/environments/classic_control/acrobot/
-# state: [cos(theta1) sin(theta1) cos(theta2) sin(theta2) theta_dot1 theta_dot2]
-env = gym.make('Acrobot-v1')
-lr = 0.01
-discount = 0.99
-seed = 2
-max_episode_num = 5000
-
-
-# # Mountain Car
-# # https://gymnasium.farama.org/environments/classic_control/mountain_car/
-# # state: [position velocity]
-# env = gym.make('MountainCar-v0', max_episode_steps=1000)
-# # 0.1: getting small gains but loses it on next iter
-# # 0,2: many more small gains, don't stick
-# lr = 1e-4
+# # Acrobat
+# # https://gymnasium.farama.org/environments/classic_control/acrobot/
+# # state: [cos(theta1) sin(theta1) cos(theta2) sin(theta2) theta_dot1 theta_dot2]
+# env = gym.make('Acrobot-v1')
+# lr = 0.01
 # discount = 0.99
-# seed = 3
-# max_episode_num = 2000
+# seed = 2
+# max_episode_num = 5000
+
+
+# Mountain Car
+# https://gymnasium.farama.org/environments/classic_control/mountain_car/
+# state: [position velocity]
+env = gym.make('MountainCar-v0', max_episode_steps=1000)
+# 0.1: getting small gains but loses it on next iter
+# 0,2: many more small gains, don't stick
+
+#started from 1e-6
+# 5e-8 best so far. Optimal around 500
+# 2e-8 around 800
+# 3e-8 around 600
+# 4e-8 arund 750
+lr = 3e-8
+discount = 0.95
+seed = 3
+max_episode_num = 2000
 ########################################################################
 wrapped_env = gym.wrappers.RecordEpisodeStatistics(env)
 
